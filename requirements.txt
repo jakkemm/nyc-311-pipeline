@@ -1,0 +1,4 @@
+# Airflow and psycopg2 already ship with the base image.
+pyspark==3.5.3
+requests==2.32.3
+pyarrow==17.0.0

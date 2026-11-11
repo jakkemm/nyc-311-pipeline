@@ -1,0 +1,14 @@
+# Keeps the build context small. Only requirements.txt is actually COPYed in.
+.git
+.gitignore
+.env
+.venv
+__pycache__/
+*.pyc
+data/
+logs/
+notebooks/
+tests/
+docs/
+.pytest_cache/
+.ipynb_checkpoints/

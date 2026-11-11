@@ -9,6 +9,7 @@ x-airflow-common: &airflow-common
     PYTHONPATH: /opt/airflow/src
     AIRFLOW_ADMIN_USER: ${AIRFLOW_ADMIN_USER}
     AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
+    SOCRATA_APP_TOKEN: ${SOCRATA_APP_TOKEN}
   volumes:
     - ./dags:/opt/airflow/dags
     - ./src:/opt/airflow/src

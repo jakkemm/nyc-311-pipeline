@@ -7,6 +7,8 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/airflow
     PYTHONPATH: /opt/airflow/src
+    AIRFLOW_ADMIN_USER: ${AIRFLOW_ADMIN_USER}
+    AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
   volumes:
     - ./dags:/opt/airflow/dags
     - ./src:/opt/airflow/src
@@ -39,9 +41,6 @@ services:
   airflow-init:
     <<: *airflow-common
     entrypoint: /bin/bash
-    environment:
-      AIRFLOW_ADMIN_USER: ${AIRFLOW_ADMIN_USER}
-      AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
     command:
       - -c
       - |

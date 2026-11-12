@@ -7,10 +7,8 @@ from pathlib import Path
 import requests
 
 from nyc311 import config
+from nyc311.utils.spark import raw_path
 
-
-def raw_path(day: date) -> Path:
-    return config.RAW_DIR / f"{day.isoformat()}.jsonl.gz"
 
 def fetch_day(day: date) -> Path:
     start = datetime.combine(day, datetime.min.time())

@@ -1,3 +1,4 @@
+import gzip
 import json
 import sys
 from datetime import date, datetime, timedelta
@@ -9,7 +10,7 @@ from nyc311 import config
 
 
 def raw_path(day: date) -> Path:
-    return config.RAW_DIR / f"{day.isoformat()}.jsonl"
+    return config.RAW_DIR / f"{day.isoformat()}.jsonl.gz"
 
 def fetch_day(day: date) -> Path:
     start = datetime.combine(day, datetime.min.time())
@@ -48,7 +49,11 @@ def fetch_day(day: date) -> Path:
             if len(rows) < config.PAGE_SIZE:
                 break
 
-    tmp_path.replace(out_path)
+    with open(tmp_path, "r", encoding="utf-8") as f_in:  # noqa: SIM117
+        with gzip.open(out_path, "wt", encoding="utf-8") as f_out:
+            f_out.writelines(f_in)
+    tmp_path.unlink()
+
     print(f"{day}: wrote {total} rows to {out_path}")
     return out_path
 

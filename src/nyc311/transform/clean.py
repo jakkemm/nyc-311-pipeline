@@ -73,7 +73,6 @@ STRING_COLS = [f.name for f in TARGET_FIELDS if isinstance(f.dataType, StringTyp
 
 # Values that mean "no value" even though they are not NULL
 PLACEHOLDERS = ["", "N/A", "NULL", "UNSPECIFIED", "UNKNOWN"]
-
 VALID_BOROUGHS = ["BRONX", "BROOKLYN", "MANHATTAN", "QUEENS", "STATEN ISLAND"]
 BOROUGH_COLS = ["borough", "park_borough", "taxi_company_borough"]
 
@@ -139,5 +138,5 @@ def clean(df: DataFrame) -> DataFrame:
     )
 
 
-def run(spark: SparkSession, day: date) -> None:
+def clean_day(spark: SparkSession, day: date) -> None:
     write_clean(clean(read_raw(spark, day)))

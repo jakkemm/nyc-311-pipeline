@@ -5,7 +5,7 @@ Usage:
 import argparse
 from datetime import date
 
-from nyc311.transform.clean import run
+from nyc311.transform.clean import clean_day
 from nyc311.utils.spark import get_spark_session
 
 
@@ -16,7 +16,7 @@ def main():
 
     spark = get_spark_session("nyc311-clean")
     try:
-        run(spark, args.day)
+        clean_day(spark, args.day)
     finally:
         spark.stop()
 

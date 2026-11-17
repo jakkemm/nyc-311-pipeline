@@ -7,7 +7,6 @@ from pathlib import Path
 import requests
 
 from nyc311 import config
-from nyc311.utils.spark import raw_path
 
 HEADERS = {"X-App-Token": config.SOCRATA_APP_TOKEN} if config.SOCRATA_APP_TOKEN else None
 
@@ -22,7 +21,7 @@ def _build_filter(day: date, end_next_day: bool = False) -> str:
     return where
 
 def fetch_day(day: date) -> Path:
-    out_path = raw_path(day)
+    out_path = config.raw_path(day)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = out_path.with_suffix(".tmp") 
     

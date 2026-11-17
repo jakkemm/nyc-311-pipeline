@@ -11,7 +11,6 @@ from pyspark.sql.types import (
 )
 
 from nyc311 import config
-from nyc311.utils.spark import raw_path
 
 NYC311_SCHEMA = StructType([
     # Identifiers and timestamps
@@ -82,7 +81,7 @@ def read_raw(spark: SparkSession, day: date) -> DataFrame:
     all_strings = StructType(
         [StructField(f.name, StringType(), True) for f in TARGET_FIELDS]
     )
-    path = raw_path(day)
+    path = config.raw_path(day)
     return spark.read.schema(all_strings).json(str(path))
 
 def write_clean(df: DataFrame) -> None:

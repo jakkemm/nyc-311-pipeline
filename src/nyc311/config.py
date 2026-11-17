@@ -1,4 +1,5 @@
 import os
+from datetime import date
 from pathlib import Path
 
 # Paths inside the container
@@ -11,3 +12,6 @@ MARTS_DIR = DATA_DIR / "marts"
 SOCRATA_URL = "https://nycopendata.socrata.com/resource/erm2-nwe9.json"
 SOCRATA_APP_TOKEN = os.getenv("SOCRATA_APP_TOKEN") or None
 PAGE_SIZE = 10_000
+
+def raw_path(day: date) -> Path:
+    return RAW_DIR / f"{day.isoformat()}.jsonl.gz"

@@ -1,13 +1,5 @@
-from datetime import date
-from pathlib import Path
-
 from pyspark.sql import SparkSession
 
-from nyc311 import config
-
-
-def raw_path(day: date) -> Path:
-    return config.RAW_DIR / f"{day.isoformat()}.jsonl.gz"
 
 def get_spark_session(app_name: str = "nyc311") -> SparkSession:
     spark = (

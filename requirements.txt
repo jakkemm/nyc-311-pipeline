@@ -2,6 +2,7 @@
 pyspark==3.5.3
 requests==2.32.3
 pyarrow==17.0.0
+apache-airflow-providers-postgres==5.14.0
 
 # Jupyter
 jupyterlab==4.3.5

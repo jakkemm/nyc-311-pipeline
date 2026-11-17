@@ -10,6 +10,9 @@ x-airflow-common: &airflow-common
     AIRFLOW_ADMIN_USER: ${AIRFLOW_ADMIN_USER}
     AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
     SOCRATA_APP_TOKEN: ${SOCRATA_APP_TOKEN}
+    # Creating manual connection to database created by postgres/init/01-create-databases.sql
+    # This is used in Postgres DAGs
+    AIRFLOW_CONN_POSTGRES_LOCALHOST: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/nyc311
   volumes:
     - ./dags:/opt/airflow/dags
     - ./src:/opt/airflow/src

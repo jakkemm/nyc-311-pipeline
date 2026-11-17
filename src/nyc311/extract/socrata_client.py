@@ -9,16 +9,19 @@ import requests
 from nyc311 import config
 from nyc311.utils.spark import raw_path
 
+HEADERS = {"X-App-Token": config.SOCRATA_APP_TOKEN} if config.SOCRATA_APP_TOKEN else None
 
-def fetch_day(day: date) -> Path:
+def _build_filter(day: date, end_next_day: bool = False) -> str:
+    days_delta = 2 if end_next_day else 1
     start = datetime.combine(day, datetime.min.time())
-    end = start + timedelta(days=1)
+    end = start + timedelta(days=days_delta)
     where = (
         f"created_date >= '{start.isoformat()}' "
         f"AND created_date < '{end.isoformat()}'"
     )
-    
-    headers = {"X-App-Token": config.SOCRATA_APP_TOKEN}
+    return where
+
+def fetch_day(day: date) -> Path:
     out_path = raw_path(day)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = out_path.with_suffix(".tmp") 
@@ -28,12 +31,12 @@ def fetch_day(day: date) -> Path:
     with open(tmp_path, "w", encoding="utf-8") as f:
         while True:
             params = {
-                "$where": where,
+                "$where": _build_filter(day),
                 "$order": "unique_key",
                 "$offset": offset,
                 "$limit": config.PAGE_SIZE,
             }
-            resp = requests.get(config.SOCRATA_URL, params=params, headers=headers, timeout=60)
+            resp = requests.get(config.SOCRATA_URL, params=params, headers=HEADERS, timeout=60)
             resp.raise_for_status()
             rows = resp.json()
 
@@ -55,6 +58,17 @@ def fetch_day(day: date) -> Path:
     print(f"{day}: wrote {total} rows to {out_path}")
     return out_path
 
+def is_day_complete(day: date) -> bool:
+    params = {
+        "$select": "date_trunc_ymd(created_date) AS day",
+        "$where": _build_filter(day, end_next_day=True),
+        "$group": "day",
+    }
+    
+    resp = requests.get(config.SOCRATA_URL, params=params, headers=HEADERS, timeout=60)
+    resp.raise_for_status()
+    return len(resp.json()) == 2
 
 if __name__ == "__main__":
+    print(is_day_complete(date.fromisoformat(sys.argv[1])))
     fetch_day(date.fromisoformat(sys.argv[1]))

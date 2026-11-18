@@ -37,7 +37,7 @@ def days_to_refresh(nyc_map, db_map):
 
 
 @dag(
-    dag_id="nyc311_daily_etl_v05",
+    dag_id="nyc311_daily_etl",
     default_args=ARGS,
     start_date=datetime(2026, 1, 1),
     schedule="30 5 * * *",

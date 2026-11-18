@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 
 from airflow.decorators import dag, task
-from airflow.providers.postgres.hooks.postgres import PostgresHook
 
-from nyc311.extract.socrata_client import fetch_day, fetch_latest_per
+from nyc311 import db
+from nyc311.extract import socrata_client as sc
 
 LOOKBACK_DAYS = 7
 DB_TASK = {"retries": 3, "execution_timeout": timedelta(seconds=60)}
@@ -13,19 +13,6 @@ SPARK_TASK = {
     "max_active_tis_per_dag": 1,
 }
 ARGS = {"owner": "jakkemm", "retry_delay": timedelta(seconds=30)}
-
-
-def get_db_map():
-    hook = PostgresHook(postgres_conn_id="postgres_localhost")
-    db_days = hook.get_records("""
-        SELECT 
-            dag_run_date,
-            MAX(latest_date)
-        FROM raw_fetch_logs
-        GROUP BY dag_run_date
-        ORDER BY dag_run_date ASC;
-    """)
-    return {row[0]: row[1] for row in db_days}
 
 
 def days_to_refresh(nyc_map, db_map):
@@ -48,23 +35,14 @@ def days_to_refresh(nyc_map, db_map):
 def nyc311_daily_etl():
     @task(**DB_TASK)
     def create_table():
-        hook = PostgresHook(postgres_conn_id="postgres_localhost")
-        hook.run("""
-            CREATE TABLE IF NOT EXISTS raw_fetch_logs (
-                id BIGSERIAL PRIMARY KEY,
-                dt TIMESTAMP DEFAULT LOCALTIMESTAMP,
-                dag_run_id TEXT,
-                dag_run_date TIMESTAMP,
-                latest_date TIMESTAMP
-            );
-        """)
+        db.create_log_table()
 
     @task(**DB_TASK)
     def dates_to_refresh(logical_date=None):
         day = logical_date.date()
 
-        nyc_map = fetch_latest_per(day, LOOKBACK_DAYS)
-        db_map = get_db_map()
+        nyc_map = sc.fetch_latest_per(day, LOOKBACK_DAYS)
+        db_map = db.get_latest_per_day()
 
         refresh_days = days_to_refresh(nyc_map, db_map)
         print(f"Found {len(refresh_days)} dates to refresh: {refresh_days}")
@@ -72,7 +50,7 @@ def nyc311_daily_etl():
 
     @task(**DB_TASK)
     def fetch_raw_data(day):
-        last_dt = fetch_day(day)
+        last_dt = sc.fetch_day(day)
         return (day, last_dt)
 
     @task.bash(**SPARK_TASK)
@@ -81,14 +59,7 @@ def nyc311_daily_etl():
 
     @task(**DB_TASK)
     def update_db_log(update_rows, *, run_id):
-        hook = PostgresHook(postgres_conn_id="postgres_localhost")
-        rows = [(run_id, *update_row) for update_row in update_rows]
-
-        hook.insert_rows(
-            table="raw_fetch_logs",
-            rows=rows,
-            target_fields=["dag_run_id", "dag_run_date", "latest_date"],
-        )
+        db.insert_log_rows(run_id, update_rows)
 
     table = create_table()
     days = dates_to_refresh()

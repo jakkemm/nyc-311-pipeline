@@ -6,7 +6,7 @@ import argparse
 from datetime import date
 
 from nyc311.transform.clean import clean_day
-from nyc311.utils.spark import get_spark_session
+from nyc311.spark import get_spark_session
 
 
 def main():
